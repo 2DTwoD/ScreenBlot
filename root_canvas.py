@@ -2,6 +2,8 @@ import operator
 import tkinter as tk
 from enum import Enum
 
+from autosize_entry import AutosizeEntry
+
 
 class ShapeType(Enum):
     LINE = 0,
@@ -24,7 +26,9 @@ class RootCanvas(tk.Canvas):
         clear.pack(anchor=tk.NE)
         undo.pack(anchor=tk.NE)
 
-        self.type = ShapeType.TEXT
+        self.type = ShapeType.LINE
+
+        self.entry = None
 
         self.mouse_down = False
         self.start_click_drawing = False
@@ -71,6 +75,7 @@ class RootCanvas(tk.Canvas):
             case ShapeType.LINE:
                 self.coordinates.append((x, y))
                 self.shape_id = self.create_line(self.coordinates, width=3, fill='white')
+                # self.shape_id = self.create_polygon(*self.coordinates, x, y, width=3, outline='white', fill='red')
             case ShapeType.RECTANGLE:
                 self.shape_id = self.create_rectangle(*self.coordinates, x, y, width=3, outline='white')
             case ShapeType.OVAL:
@@ -78,7 +83,7 @@ class RootCanvas(tk.Canvas):
             case ShapeType.POLYGON:
                 self.shape_id = self.create_polygon(*self.coordinates, x, y, width=3, outline='white', fill='red')
             case ShapeType.TEXT:
-                self.entry = tk.Entry(self, borderwidth=5)
+                self.entry = AutosizeEntry(self, font='Courier 20 bold', bg='white', fg='black')
                 self.shape_id = self.create_window(self.get_start_coords(), window=self.entry)
 
     def end_drawing(self):
@@ -87,7 +92,7 @@ class RootCanvas(tk.Canvas):
         if self.shape_id is None:
             return
         tmp_shape_id = self.shape_id
-        if self.type == ShapeType.TEXT:
+        if self.type == ShapeType.TEXT and self.entry is not None:
             self.entry.bind('<Button-1>', lambda e: self.shape_click_action(tmp_shape_id))
             self.entry.bind('<Button-3>', lambda e: self.delete(tmp_shape_id))
         else:
@@ -95,6 +100,7 @@ class RootCanvas(tk.Canvas):
             self.tag_bind(self.shape_id, '<Button-3>', lambda e: self.delete(tmp_shape_id))
 
         self.shape_id = None
+        self.entry = None
 
     def shape_click_action(self, shape_id):
         self.shape_for_moving = shape_id
