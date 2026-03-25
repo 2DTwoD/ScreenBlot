@@ -18,6 +18,8 @@ class RootCanvas(tk.Canvas):
         clear = tk.Button(self, text='C', command=self.clear_action, width=3)
         undo = tk.Button(self, text='<--', command=self.undo_action, width=3)
 
+        self.transparent_color = transparent_color
+
         close.pack(anchor=tk.NE)
         clear.pack(anchor=tk.NE)
         undo.pack(anchor=tk.NE)
@@ -39,14 +41,15 @@ class RootCanvas(tk.Canvas):
         self.mouse_down = True
         self.start_click_drawing = self.type == ShapeType.POLYGON
         self.coordinates.append((x, y))
+        if self.type == ShapeType.TEXT:
+            self.after(1, lambda: self.draw_shape() if self.shape_for_moving is None else None)
 
     def global_mouse_move_action(self, x, y):
-        if self.mouse_down or self.start_click_drawing:
+        if self.shape_for_moving is not None:
             self.coordinates.append((x, y))
-            if self.shape_for_moving is None:
-                self.after(0, lambda: self.draw_shape())
-            else:
-                self.move(self.shape_for_moving, *self.get_coords_increment())
+            self.move(self.shape_for_moving, *self.get_coords_increment())
+        elif self.mouse_down:
+            self.after(0, lambda: self.draw_shape(x, y))
 
     def global_lmouse_up_action(self, x, y):
         self.mouse_down = False
@@ -61,24 +64,22 @@ class RootCanvas(tk.Canvas):
             self.coordinates.clear()
             self.start_click_drawing = False
 
-    def draw_shape(self):
+    def draw_shape(self, x=0, y=0):
         if self.shape_id is not None:
             self.delete(self.shape_id)
         match self.type:
             case ShapeType.LINE:
-                self.shape_id = self.create_oval(self.coordinates, width=3, outline='white')
+                self.coordinates.append((x, y))
                 self.shape_id = self.create_line(self.coordinates, width=3, fill='white')
             case ShapeType.RECTANGLE:
-                self.shape_id = self.create_rectangle(self.coordinates, width=3, outline='white')
-                self.coordinates.pop(-1)
+                self.shape_id = self.create_rectangle(*self.coordinates, x, y, width=3, outline='white')
             case ShapeType.OVAL:
-                self.coordinates.pop(-1)
+                self.shape_id = self.create_oval(*self.coordinates, x, y, width=3, outline='white')
             case ShapeType.POLYGON:
-                self.shape_id = self.create_polygon(self.coordinates, width=3, outline='white', fill='red')
-                self.coordinates.pop(-1)
+                self.shape_id = self.create_polygon(*self.coordinates, x, y, width=3, outline='white', fill='red')
             case ShapeType.TEXT:
-                self.shape_id = self.create_text(self.get_start_coords(), fill="red", text="Test")
-                self.coordinates.pop(-1)
+                self.entry = tk.Entry(self, borderwidth=5)
+                self.shape_id = self.create_window(self.get_start_coords(), window=self.entry)
 
     def end_drawing(self):
         self.coordinates.clear()
@@ -86,8 +87,13 @@ class RootCanvas(tk.Canvas):
         if self.shape_id is None:
             return
         tmp_shape_id = self.shape_id
-        self.tag_bind(self.shape_id, '<Button-1>', lambda e: self.shape_click_action(tmp_shape_id))
-        self.tag_bind(self.shape_id, '<Button-3>', lambda e: self.delete(tmp_shape_id))
+        if self.type == ShapeType.TEXT:
+            self.entry.bind('<Button-1>', lambda e: self.shape_click_action(tmp_shape_id))
+            self.entry.bind('<Button-3>', lambda e: self.delete(tmp_shape_id))
+        else:
+            self.tag_bind(self.shape_id, '<Button-1>', lambda e: self.shape_click_action(tmp_shape_id))
+            self.tag_bind(self.shape_id, '<Button-3>', lambda e: self.delete(tmp_shape_id))
+
         self.shape_id = None
 
     def shape_click_action(self, shape_id):
