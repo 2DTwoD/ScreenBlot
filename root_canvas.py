@@ -3,6 +3,7 @@ import tkinter as tk
 from enum import Enum
 
 from autosize_entry import AutosizeEntry
+from main import transparent_color
 
 
 class ShapeType(Enum):
@@ -14,7 +15,7 @@ class ShapeType(Enum):
 
 
 class RootCanvas(tk.Canvas):
-    def __init__(self, root, transparent_color):
+    def __init__(self, root):
         tk.Canvas.__init__(self, root, bg=transparent_color, bd=0, highlightthickness=0)
         close = tk.Button(self, text='X', command=root.destroy, width=3)
         close.bind('<Button-1>', lambda e: self.menu_busy_action())
@@ -23,7 +24,6 @@ class RootCanvas(tk.Canvas):
         undo = tk.Button(self, text='<--', command=self.undo_action, width=3)
         undo.bind('<Button-1>', lambda e: self.menu_busy_action())
 
-        self.transparent_color = transparent_color
         self.bind("<<Screen_lmouse_down>>", lambda e: self.after(1, self.lmouse_down_action, e.x, e.y))
         self.bind("<<Screen_lmouse_up>>", lambda e: self.after(1, self.lmouse_up_action, e.x, e.y))
         self.bind("<<Screen_mouse_move>>", lambda e: self.after(1, self.mouse_move_action, e.x, e.y))

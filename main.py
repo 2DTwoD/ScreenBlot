@@ -6,6 +6,8 @@ from root_canvas import RootCanvas
 
 
 transparent_color = '#ABCDEF'
+
+
 def main():
     faulthandler.enable()
     root = tk.Tk()
@@ -16,7 +18,7 @@ def main():
     root.attributes('-topmost', True)
     root.config(background=transparent_color)
 
-    root_canvas = RootCanvas(root, transparent_color)
+    root_canvas = RootCanvas(root)
     root_canvas.place(x=0, y=0)
 
     MouseCoordinate(root_canvas)
