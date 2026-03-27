@@ -1,39 +1,30 @@
 import operator
 import tkinter as tk
-from enum import Enum
 
 from autosize_entry import AutosizeEntry
-from main import transparent_color
+from instrument_panel import InstrumentPanel, ShapeType
 
 
-class ShapeType(Enum):
-    LINE = 0,
-    RECTANGLE = 1,
-    OVAL = 2,
-    POLYGON = 3,
-    TEXT = 4,
+def type_none_check(func):
+    def wrapper(self, x=0, y=0):
+        if self.i_panel.type == ShapeType.NONE and self.shape_for_moving is None:
+            return lambda self, x, y: None
+        return func(self, x, y)
+    return wrapper
 
 
 class RootCanvas(tk.Canvas):
-    def __init__(self, root):
+    def __init__(self, root, transparent_color):
         tk.Canvas.__init__(self, root, bg=transparent_color, bd=0, highlightthickness=0)
-        close = tk.Button(self, text='X', command=root.destroy, width=3)
-        close.bind('<Button-1>', lambda e: self.menu_busy_action())
-        clear = tk.Button(self, text='C', command=self.clear_action, width=3)
-        clear.bind('<Button-1>', lambda e: self.menu_busy_action())
-        undo = tk.Button(self, text='<--', command=self.undo_action, width=3)
-        undo.bind('<Button-1>', lambda e: self.menu_busy_action())
+
+        self.i_panel = InstrumentPanel(self, root, transparent_color, self.clear_action, self.undo_action)
+        self.i_panel.bind_frame('<Button-1>', lambda e: self.menu_busy_action())
+        self.i_panel.pack(anchor=tk.NE)
 
         self.bind("<<Screen_lmouse_down>>", lambda e: self.after(1, self.lmouse_down_action, e.x, e.y))
         self.bind("<<Screen_lmouse_up>>", lambda e: self.after(1, self.lmouse_up_action, e.x, e.y))
         self.bind("<<Screen_mouse_move>>", lambda e: self.after(1, self.mouse_move_action, e.x, e.y))
         self.bind("<<Screen_rmouse_down>>", lambda e: self.after(1, self.rmouse_down_action, e.x, e.y))
-
-        close.pack(anchor=tk.NE)
-        clear.pack(anchor=tk.NE)
-        undo.pack(anchor=tk.NE)
-
-        self.type = ShapeType.POLYGON
 
         self.entry = None
         self.shape_id = None
@@ -48,35 +39,40 @@ class RootCanvas(tk.Canvas):
         self.move_shift_x = 0
         self.move_shift_y = 0
 
+    @type_none_check
     def lmouse_down_action(self, x=0, y=0):
+        print("lmouse_down_action")
         if self.menu_clicked:
             self.menu_clicked = False
             return
         self.mouse_down = True
         self.coordinates.append((x, y))
         if self.shape_for_moving is None:
-            self.start_click_drawing = self.type == ShapeType.POLYGON
-            if self.type == ShapeType.TEXT:
+            self.start_click_drawing = self.i_panel.type == ShapeType.POLYGON
+            if self.i_panel.type == ShapeType.TEXT:
                 self.draw_shape()
 
+    @type_none_check
     def mouse_move_action(self, x=0, y=0):
         if self.shape_for_moving is not None:
             self.coordinates.append((x, y))
             self.move(self.shape_for_moving, *self.get_coords_increment())
-        elif self.type == ShapeType.TEXT:
+        elif self.i_panel.type == ShapeType.TEXT:
             return
         elif self.mouse_down or self.start_click_drawing:
             self.draw_shape(x, y)
 
+    @type_none_check
     def lmouse_up_action(self, x=0, y=0):
         self.mouse_down = False
-        if self.type == ShapeType.POLYGON:
+        if self.i_panel.type == ShapeType.POLYGON:
             if self.shape_for_moving is not None:
                 self.coordinates.clear()
-            self.shape_for_moving = None
+                self.shape_for_moving = None
             return
         self.end_drawing()
 
+    @type_none_check
     def rmouse_down_action(self, x=0, y=0):
         if self.start_click_drawing:
             self.end_drawing()
@@ -85,8 +81,8 @@ class RootCanvas(tk.Canvas):
     def draw_shape(self, x=0, y=0):
         if self.shape_id is not None:
             self.delete(self.shape_id)
-        match self.type:
-            case ShapeType.LINE:
+        match self.i_panel.type:
+            case ShapeType.PENCIL:
                 self.coordinates.append((x, y))
                 self.shape_id = self.create_line(self.coordinates, width=3, fill='white')
                 # self.shape_id = self.create_polygon(*self.coordinates, x, y, width=3, outline='white', fill='red')
@@ -106,7 +102,7 @@ class RootCanvas(tk.Canvas):
         if self.shape_id is None:
             return
         tmp_shape_id = self.shape_id
-        if self.type == ShapeType.TEXT and self.entry is not None:
+        if self.i_panel.type == ShapeType.TEXT and self.entry is not None:
             self.entry.bind('<Button-1>', lambda e: self.shape_click_action(tmp_shape_id))
             self.entry.bind('<Button-3>', lambda e: self.delete(tmp_shape_id))
         else:
@@ -139,4 +135,5 @@ class RootCanvas(tk.Canvas):
             return map(operator.sub, self.coordinates[-1], self.coordinates[-2])
 
     def menu_busy_action(self):
-        self.menu_clicked = True
+        self.rmouse_down_action()
+        self.menu_clicked = self.i_panel.type != ShapeType.NONE
