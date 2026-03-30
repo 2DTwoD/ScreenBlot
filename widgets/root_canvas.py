@@ -1,16 +1,8 @@
 import operator
 import tkinter as tk
 
-from autosize_entry import AutosizeEntry
-from instrument_panel import InstrumentPanel, ShapeType
-
-
-def type_none_check(func):
-    def wrapper(self, x=0, y=0):
-        if self.i_panel.type == ShapeType.NONE and self.shape_for_moving is None or self.root.wm_state() == 'iconic':
-            return lambda self, x, y: None
-        return func(self, x, y)
-    return wrapper
+from widgets.instrument_panel import InstrumentPanel, ShapeType
+from widgets.autosize_entry import AutosizeEntry
 
 
 class RootCanvas(tk.Canvas):
@@ -40,6 +32,15 @@ class RootCanvas(tk.Canvas):
         self.shape_for_moving = None
         self.move_shift_x = 0
         self.move_shift_y = 0
+
+    @staticmethod
+    def type_none_check(func):
+        def wrapper(self, x=0, y=0):
+            if self.i_panel.type == ShapeType.NONE and self.shape_for_moving is None or self.root.wm_state() == 'iconic':
+                return lambda slf, _x, _y: None
+            return func(self, x, y)
+
+        return wrapper
 
     @type_none_check
     def lmouse_down_action(self, x=0, y=0):
@@ -112,6 +113,8 @@ class RootCanvas(tk.Canvas):
             case ShapeType.TEXT:
                 self.check_border_color()
                 self.check_fill_color()
+                if self.i_panel.get_border_color() == self.i_panel.get_fill_color():
+                    self.i_panel.return_border_color()
                 self.entry = AutosizeEntry(self, font='Courier 20 bold',
                                            fg=self.i_panel.get_border_color(),
                                            bg=self.i_panel.get_fill_color())

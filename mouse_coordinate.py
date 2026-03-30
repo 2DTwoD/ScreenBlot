@@ -18,4 +18,3 @@ class MouseCoordinate:
                 self.root_canvas.event_generate('<<Screen_lmouse_up>>', x=x, y=y)
         elif button == pynput.mouse.Button.right:
             self.root_canvas.event_generate('<<Screen_rmouse_down>>', x=x, y=y)
-

@@ -3,7 +3,7 @@ import time
 import tkinter as tk
 from enum import Enum
 
-from color_panel import ColorPanel
+from widgets.color_panel import ColorPanel
 
 
 class ShapeType(Enum):
@@ -70,7 +70,8 @@ class InstrumentPanel(tk.Frame):
 
         threading.Thread(target=self.update, daemon=True).start()
 
-    def open_color_panel(self, show_panel, hide_panel):
+    @staticmethod
+    def open_color_panel(show_panel, hide_panel):
         if show_panel.winfo_viewable():
             show_panel.pack_forget()
         else:

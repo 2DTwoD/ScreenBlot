@@ -1,7 +1,7 @@
 import tkinter as tk
 
 from mouse_coordinate import MouseCoordinate
-from root_canvas import RootCanvas
+from widgets.root_canvas import RootCanvas
 
 
 transparent_color = '#ABCDEF'
