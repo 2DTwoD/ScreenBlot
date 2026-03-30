@@ -22,6 +22,7 @@ class InstrumentPanel(tk.Frame):
         self.type = ShapeType.NONE
 
         close = tk.Button(self, text='X', command=root.destroy, width=3, font='Courier 10 bold', background='red')
+        minimize = tk.Button(self, text='-', command=root.iconify, width=3, font='Courier 10 bold', background='orange')
         clear = tk.Button(self, text='C', command=clear_action, width=3, font='Courier 10 bold', background='yellow')
         undo = tk.Button(self, text='<-', command=undo_action, width=3, font='Courier 10 bold', background='yellow')
 
@@ -31,24 +32,30 @@ class InstrumentPanel(tk.Frame):
         self.instrument_buttons = []
         self.instrument_buttons.append(tk.Button(self, text='.', command=lambda: self.setType(ShapeType.NONE), width=3,
                                                  font='Courier 10 bold'))
-        self.instrument_buttons.append(tk.Button(self, text='~', command=lambda: self.setType(ShapeType.PENCIL), width=3,
-                                                 font='Courier 10 bold'))
-        self.instrument_buttons.append(tk.Button(self, text='□', command=lambda: self.setType(ShapeType.RECTANGLE), width=3,
-                                                 font='Courier 10 bold'))
+        self.instrument_buttons.append(
+            tk.Button(self, text='~', command=lambda: self.setType(ShapeType.PENCIL), width=3,
+                      font='Courier 10 bold'))
+        self.instrument_buttons.append(
+            tk.Button(self, text='□', command=lambda: self.setType(ShapeType.RECTANGLE), width=3,
+                      font='Courier 10 bold'))
         self.instrument_buttons.append(tk.Button(self, text='O', command=lambda: self.setType(ShapeType.OVAL), width=3,
                                                  font='Courier 10 bold'))
-        self.instrument_buttons.append(tk.Button(self, text='L', command=lambda: self.setType(ShapeType.POLYGON), width=3,
-                                                 font='Courier 10 bold'))
+        self.instrument_buttons.append(
+            tk.Button(self, text='L', command=lambda: self.setType(ShapeType.POLYGON), width=3,
+                      font='Courier 10 bold'))
         self.instrument_buttons.append(tk.Button(self, text='T', command=lambda: self.setType(ShapeType.TEXT), width=3,
                                                  font='Courier 10 bold'))
         self.border_color_button = tk.Button(self, text='⬠', background='lightgray',
-                                           command=lambda: self.open_color_panel(self.border_color_panel, self.fill_color_panel),
-                                           width=3, font='Courier 10 bold')
+                                             command=lambda: self.open_color_panel(self.border_color_panel,
+                                                                                   self.fill_color_panel),
+                                             width=3, font='Courier 10 bold')
         self.fill_color_button = tk.Button(self, text='⬟', background='lightgray',
-                                           command=lambda: self.open_color_panel(self.fill_color_panel, self.border_color_panel),
+                                           command=lambda: self.open_color_panel(self.fill_color_panel,
+                                                                                 self.border_color_panel),
                                            width=3, font='Courier 10 bold')
 
         close.pack(anchor=tk.NE)
+        minimize.pack(anchor=tk.NE)
         clear.pack(anchor=tk.NE)
         undo.pack(anchor=tk.NE)
 
@@ -74,6 +81,12 @@ class InstrumentPanel(tk.Frame):
         self.border_color_panel.pack_forget()
         self.fill_color_panel.pack_forget()
 
+    def border_color_panel_opened(self):
+        return self.border_color_panel.winfo_viewable()
+
+    def fill_color_panel_opened(self):
+        return self.fill_color_panel.winfo_viewable()
+
     def setType(self, new_type):
         self.type = new_type
 
@@ -93,10 +106,11 @@ class InstrumentPanel(tk.Frame):
     @staticmethod
     def update_color_button(button, panel):
         if panel.color == '':
-            button.config(background='black', foreground='white')
+            bg = 'gray' if panel.winfo_viewable() else 'black'
+            button.config(background=bg, foreground='white')
         else:
-            button.config(background='lightgray')
-            button.config(foreground=panel.color)
+            bg = 'gray' if panel.winfo_viewable() else 'lightgray'
+            button.config(background=bg, foreground=panel.color)
 
     def get_border_color(self):
         return self.border_color_panel.color

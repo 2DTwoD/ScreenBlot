@@ -7,7 +7,7 @@ from instrument_panel import InstrumentPanel, ShapeType
 
 def type_none_check(func):
     def wrapper(self, x=0, y=0):
-        if self.i_panel.type == ShapeType.NONE and self.shape_for_moving is None:
+        if self.i_panel.type == ShapeType.NONE and self.shape_for_moving is None or self.root.wm_state() == 'iconic':
             return lambda self, x, y: None
         return func(self, x, y)
     return wrapper
@@ -17,7 +17,10 @@ class RootCanvas(tk.Canvas):
     def __init__(self, root, transparent_color):
         tk.Canvas.__init__(self, root, bg=transparent_color, bd=0, highlightthickness=0)
 
-        self.i_panel = InstrumentPanel(self, root, transparent_color, self.clear_action, self.undo_action, self.menu_busy_action)
+        self.root = root
+
+        self.i_panel = InstrumentPanel(self, root, transparent_color, self.clear_action, self.undo_action,
+                                       self.menu_busy_action)
         self.i_panel.pack(anchor=tk.NE)
 
         self.bind("<<Screen_lmouse_down>>", lambda e: self.after(1, self.lmouse_down_action, e.x, e.y))
