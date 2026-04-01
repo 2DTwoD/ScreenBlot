@@ -30,20 +30,20 @@ class InstrumentPanel(tk.Frame):
         self.fill_color_panel = ColorPanel(self, menu_busy_action, default_color='white')
 
         self.instrument_buttons = []
-        self.instrument_buttons.append(tk.Button(self, text='.', command=lambda: self.setType(ShapeType.NONE), width=3,
+        self.instrument_buttons.append(tk.Button(self, text='.', command=lambda: self.set_type(ShapeType.NONE), width=3,
                                                  font='Courier 10 bold'))
         self.instrument_buttons.append(
-            tk.Button(self, text='~', command=lambda: self.setType(ShapeType.PENCIL), width=3,
+            tk.Button(self, text='~', command=lambda: self.set_type(ShapeType.PENCIL), width=3,
                       font='Courier 10 bold'))
         self.instrument_buttons.append(
-            tk.Button(self, text='□', command=lambda: self.setType(ShapeType.RECTANGLE), width=3,
+            tk.Button(self, text='□', command=lambda: self.set_type(ShapeType.RECTANGLE), width=3,
                       font='Courier 10 bold'))
-        self.instrument_buttons.append(tk.Button(self, text='O', command=lambda: self.setType(ShapeType.OVAL), width=3,
+        self.instrument_buttons.append(tk.Button(self, text='O', command=lambda: self.set_type(ShapeType.OVAL), width=3,
                                                  font='Courier 10 bold'))
         self.instrument_buttons.append(
-            tk.Button(self, text='L', command=lambda: self.setType(ShapeType.POLYGON), width=3,
+            tk.Button(self, text='L', command=lambda: self.set_type(ShapeType.POLYGON), width=3,
                       font='Courier 10 bold'))
-        self.instrument_buttons.append(tk.Button(self, text='T', command=lambda: self.setType(ShapeType.TEXT), width=3,
+        self.instrument_buttons.append(tk.Button(self, text='T', command=lambda: self.set_type(ShapeType.TEXT), width=3,
                                                  font='Courier 10 bold'))
         self.border_color_button = tk.Button(self, text='⬠', background='lightgray',
                                              command=lambda: self.open_color_panel(self.border_color_panel,
@@ -88,7 +88,7 @@ class InstrumentPanel(tk.Frame):
     def fill_color_panel_opened(self):
         return self.fill_color_panel.winfo_viewable()
 
-    def setType(self, new_type):
+    def set_type(self, new_type):
         self.type = new_type
 
     def update(self):
